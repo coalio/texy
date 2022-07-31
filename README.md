@@ -8,8 +8,9 @@ TeXy is available via the alias [@texymathbot](https://t.me/texymathbot).
 
 ```
 yarn install
-yarn start
 ```
+
+Create a file `src/token.txt` and paste your bot token in it, then run `yarn start`.
 
 ### Usage
 
