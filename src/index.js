@@ -73,28 +73,50 @@ bot.on("inline_query", async (msg) => {
         // Upload the image to Telegram as a sticker
         const sticker = await bot.uploadStickerFile(msg.from.id, image);
 
-        // Create sticker set
-        const sticker_set_name = `v${uuid.v4().replace(/-/g, "_")}_by_${
+        const sticker_set_name = `texy_${msg.from.id}_by_${
             (await bot.getMe()).username
         }`;
 
-        await bot.createNewStickerSet(
-            msg.from.id,
-            sticker_set_name,
-            "TeXy Math",
-            sticker.file_id,
-            "💬"
-        );
+        // Attempt to retrieve the sticker set if it exists
+        let sticker_set;
+        try {
+            sticker_set = await bot.getStickerSet(sticker_set_name);
+        } catch (e) {
+            sticker_set = false;
+        }
+
+        if (sticker_set) {
+            // Delete all stickers from the set
+            for (const sticker of sticker_set.stickers) {
+                await bot.deleteStickerFromSet(sticker.file_id);
+            }
+
+            // Add the new sticker to the set
+            await bot.addStickerToSet(
+                msg.from.id,
+                sticker_set_name,
+                sticker.file_id,
+                "💬"
+            );
+        } else {
+            await bot.createNewStickerSet(
+                msg.from.id,
+                sticker_set_name,
+                "TeXy Math",
+                sticker.file_id,
+                "💬"
+            );
+        }
 
         // Retrieve the sticker set
-        const sticker_set_info = await bot.getStickerSet(sticker_set_name);
+        sticker_set = await bot.getStickerSet(sticker_set_name);
 
         // Send the sticker set
         bot.answerInlineQuery(msg.id, [
             {
                 type: "sticker",
                 id: uuid.v4(),
-                sticker_file_id: sticker_set_info.stickers[0].file_id,
+                sticker_file_id: sticker_set.stickers[0].file_id,
             },
         ]);
     } catch (error) {
